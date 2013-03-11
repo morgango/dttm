@@ -1,0 +1,440 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module dttm</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>dttm</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/Users/mgoeller/Documents/vmware/projects/pig/tmp/dttm.py">/Users/mgoeller/Documents/vmware/projects/pig/tmp/dttm.py</a></font></td></tr></table>
+    <p><tt>DTTM&nbsp;is&nbsp;a&nbsp;UDF&nbsp;library&nbsp;that&nbsp;aims&nbsp;to&nbsp;make&nbsp;date&nbsp;manipulation&nbsp;simpler&nbsp;and&nbsp;more&nbsp;robust&nbsp;for&nbsp;unstructured&nbsp;data.&nbsp;&nbsp;<br>
+Conceptually,&nbsp;the&nbsp;date/time&nbsp;UDFs&nbsp;in&nbsp;Hadoop&nbsp;are&nbsp;fine,&nbsp;but&nbsp;they&nbsp;seem&nbsp;to&nbsp;be&nbsp;designed&nbsp;to&nbsp;be&nbsp;easy&nbsp;to&nbsp;code,&nbsp;<br>
+and&nbsp;not&nbsp;particularly&nbsp;easy&nbsp;to&nbsp;use&nbsp;for&nbsp;end&nbsp;users.&nbsp;&nbsp;<br>
+&nbsp;<br>
+The&nbsp;core&nbsp;design&nbsp;principles&nbsp;of&nbsp;the&nbsp;DTTM&nbsp;library&nbsp;are&nbsp;to:&nbsp;<br>
+&nbsp;<br>
+(1)&nbsp;Allow&nbsp;date&nbsp;and&nbsp;time&nbsp;manipulations&nbsp;from&nbsp;unstructured&nbsp;text,&nbsp;which&nbsp;I&nbsp;refer&nbsp;to&nbsp;as&nbsp;"temporal&nbsp;values".&nbsp;&nbsp;<br>
+DTTM&nbsp;does&nbsp;not&nbsp;requiring&nbsp;specific&nbsp;formatting&nbsp;for&nbsp;dates&nbsp;or&nbsp;times,&nbsp;instead&nbsp;it&nbsp;tries&nbsp;to&nbsp;figure&nbsp;out&nbsp;what&nbsp;is&nbsp;in&nbsp;<br>
+a&nbsp;text&nbsp;string&nbsp;and&nbsp;use&nbsp;it.&nbsp;&nbsp;Formatting&nbsp;temporals&nbsp;to&nbsp;fit&nbsp;the&nbsp;language&nbsp;is&nbsp;ass-backward,&nbsp;and&nbsp;typically&nbsp;<br>
+this&nbsp;is&nbsp;a&nbsp;time&nbsp;consuming,&nbsp;difficult&nbsp;and&nbsp;error-prone&nbsp;part&nbsp;of&nbsp;data&nbsp;preparation.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+A&nbsp;temporal&nbsp;value&nbsp;could&nbsp;be&nbsp;anything&nbsp;from&nbsp;"09/25/2003&nbsp;10:49:41&nbsp;-03:00"&nbsp;to&nbsp;<br>
+"Today&nbsp;is&nbsp;25&nbsp;of&nbsp;September&nbsp;of&nbsp;2003,&nbsp;exactly&nbsp;at&nbsp;10:49:41&nbsp;with&nbsp;timezone&nbsp;-03:00."&nbsp;These&nbsp;should&nbsp;both&nbsp;be&nbsp;usable&nbsp;and<br>
+interchangeable&nbsp;without&nbsp;user&nbsp;intervention.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+(2)&nbsp;Make&nbsp;temporal&nbsp;manipulations&nbsp;very&nbsp;easy&nbsp;to&nbsp;do,&nbsp;so&nbsp;that&nbsp;an&nbsp;analyst&nbsp;could&nbsp;understand&nbsp;them&nbsp;without&nbsp;needing&nbsp;<br>
+much&nbsp;(if&nbsp;any)&nbsp;additional&nbsp;knowledge&nbsp;about&nbsp;data&nbsp;types.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+(3)&nbsp;Make&nbsp;date&nbsp;and&nbsp;time&nbsp;functions&nbsp;that&nbsp;are&nbsp;friendly&nbsp;to&nbsp;users.&nbsp;&nbsp;That&nbsp;means&nbsp;having&nbsp;fewer&nbsp;functions&nbsp;with&nbsp;parameters<br>
+instead&nbsp;of&nbsp;lots&nbsp;of&nbsp;very&nbsp;similar&nbsp;functions.&nbsp;&nbsp;Also,&nbsp;include&nbsp;useful&nbsp;utility&nbsp;functions&nbsp;that&nbsp;allow&nbsp;common&nbsp;date&nbsp;manipulations,<br>
+such&nbsp;as&nbsp;extracting&nbsp;parts&nbsp;of&nbsp;temporal&nbsp;values&nbsp;(for&nbsp;partitioning)&nbsp;and&nbsp;finding&nbsp;the&nbsp;beginning&nbsp;and&nbsp;end&nbsp;of&nbsp;days,&nbsp;months,&nbsp;and&nbsp;quarters.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+(4)&nbsp;Make&nbsp;date&nbsp;and&nbsp;time&nbsp;manipulations&nbsp;more&nbsp;durable.&nbsp;&nbsp;If&nbsp;formatting&nbsp;is&nbsp;slightly&nbsp;different&nbsp;for&nbsp;you&nbsp;shouldn't&nbsp;have<br>
+to&nbsp;do&nbsp;a&nbsp;lot&nbsp;of&nbsp;work&nbsp;to&nbsp;compensate.&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;your&nbsp;data&nbsp;looks&nbsp;like&nbsp;it&nbsp;could&nbsp;be&nbsp;a&nbsp;datetime&nbsp;to&nbsp;the<br>
+eyeball,&nbsp;you&nbsp;should&nbsp;be&nbsp;able&nbsp;to&nbsp;use&nbsp;it&nbsp;for&nbsp;data&nbsp;processing.<br>
+&nbsp;<br>
+(5)&nbsp;Leverage&nbsp;the&nbsp;best&nbsp;APIs&nbsp;from&nbsp;procedural&nbsp;and&nbsp;query&nbsp;based&nbsp;languages&nbsp;and&nbsp;not&nbsp;reinvent&nbsp;the&nbsp;wheel.&nbsp;&nbsp;Use&nbsp;existing&nbsp;<br>
+code&nbsp;whenever&nbsp;possible&nbsp;and&nbsp;take&nbsp;advantage&nbsp;of&nbsp;platform-specific&nbsp;niceties.&nbsp;&nbsp;Elements&nbsp;of&nbsp;Python,&nbsp;&nbsp;<br>
+Transact-SQL,&nbsp;and&nbsp;PL/SQL&nbsp;were&nbsp;leveraged&nbsp;&nbsp;for&nbsp;back-&nbsp;and&nbsp;front-end&nbsp;work.<br>
+&nbsp;<br>
+Usage<br>
+---------<br>
+&nbsp;<br>
+Much&nbsp;of&nbsp;DTTM&nbsp;is&nbsp;designed&nbsp;to&nbsp;which&nbsp;is&nbsp;to&nbsp;have&nbsp;a&nbsp;single&nbsp;function&nbsp;with&nbsp;parameters&nbsp;to&nbsp;specify&nbsp;<br>
+how&nbsp;work&nbsp;should&nbsp;be&nbsp;done.&nbsp;&nbsp;For&nbsp;example,&nbsp;there&nbsp;is&nbsp;one&nbsp;function&nbsp;called&nbsp;date_diff&nbsp;that&nbsp;has&nbsp;a&nbsp;parameter&nbsp;(datepart)<br>
+that&nbsp;is&nbsp;used&nbsp;to&nbsp;tell&nbsp;what&nbsp;units&nbsp;should&nbsp;be&nbsp;returned.&nbsp;&nbsp;This&nbsp;is&nbsp;much&nbsp;easier&nbsp;fo&nbsp;end&nbsp;users&nbsp;to&nbsp;remember&nbsp;and&nbsp;use&nbsp;than<br>
+something&nbsp;like&nbsp;one&nbsp;function&nbsp;per&nbsp;unit&nbsp;(date_diff_seconds,&nbsp;date_diff_minutes,&nbsp;date_diff_hours,&nbsp;etc.).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+In&nbsp;actual&nbsp;operation,&nbsp;the&nbsp;functions&nbsp;that&nbsp;get&nbsp;used&nbsp;the&nbsp;most&nbsp;are:&nbsp;<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;<a href="#-parse_temporal">parse_temporal</a>(),&nbsp;which&nbsp;is&nbsp;used&nbsp;implicitly&nbsp;used&nbsp;by&nbsp;every&nbsp;other&nbsp;function.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Manipulation&nbsp;functions&nbsp;(<a href="#-date_add">date_add</a>(),&nbsp;<a href="#-date_diff">date_diff</a>(),&nbsp;<a href="#-date_trunc">date_trunc</a>(),&nbsp;<a href="#-date_start_of">date_start_of</a>(),&nbsp;<a href="#-date_end_of">date_end_of</a>(),&nbsp;<a href="#-date_name">date_name</a>())&nbsp;functions.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;<a href="#-today">today</a>()&nbsp;and&nbsp;<a href="#-now">now</a>()&nbsp;<br>
+&nbsp;<br>
+There&nbsp;is&nbsp;a&nbsp;common&nbsp;set&nbsp;of&nbsp;string&nbsp;constants&nbsp;that&nbsp;are&nbsp;used&nbsp;across&nbsp;all&nbsp;of&nbsp;the&nbsp;manipulation&nbsp;functions&nbsp;through<br>
+the&nbsp;datepart&nbsp;variable:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'year',&nbsp;'yy',&nbsp;'yyyy':&nbsp;The&nbsp;numeric&nbsp;calendar&nbsp;year<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'quarter',&nbsp;'qq',&nbsp;'q':&nbsp;The&nbsp;numeric&nbsp;calendar&nbsp;quarter&nbsp;(1-4)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'month',&nbsp;'mm',&nbsp;'m':&nbsp;The&nbsp;numeric&nbsp;calendar&nbsp;month&nbsp;(1-12)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'day_of_year',&nbsp;'dy',&nbsp;'y':&nbsp;The&nbsp;day&nbsp;(1-366)&nbsp;of&nbsp;the&nbsp;year.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'day_name',&nbsp;'dn':&nbsp;The&nbsp;name&nbsp;('Sunday')&nbsp;of&nbsp;the&nbsp;day&nbsp;of&nbsp;the&nbsp;week<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'day',&nbsp;'dd',&nbsp;'d':&nbsp;The&nbsp;numeric&nbsp;day&nbsp;of&nbsp;the&nbsp;month.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'week',&nbsp;'wk',&nbsp;'ww':&nbsp;The&nbsp;numeric&nbsp;week&nbsp;of&nbsp;the&nbsp;year.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'weekday',&nbsp;'dw':&nbsp;The&nbsp;numeric&nbsp;day&nbsp;of&nbsp;the&nbsp;week<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'day_of_week',&nbsp;'dow':&nbsp;The&nbsp;numeric&nbsp;day&nbsp;of&nbsp;the&nbsp;week&nbsp;(1-7)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'hour',&nbsp;'hh':&nbsp;The&nbsp;numeric&nbsp;hour&nbsp;of&nbsp;the&nbsp;day&nbsp;(0-23)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'minute',&nbsp;'mi',&nbsp;'n':&nbsp;The&nbsp;numeric&nbsp;minute&nbsp;of&nbsp;the&nbsp;hour&nbsp;(0-59)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'second',&nbsp;'ss',&nbsp;'s':&nbsp;The&nbsp;numeric&nbsp;second&nbsp;of&nbsp;the&nbsp;minute&nbsp;(0-59)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'microsecond',&nbsp;'mcs':&nbsp;The&nbsp;numeric&nbsp;microsecond&nbsp;of&nbsp;the&nbsp;second&nbsp;(0-1000000)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'epoch',&nbsp;'unix',&nbsp;'ep':&nbsp;The&nbsp;numeric&nbsp;number&nbsp;of&nbsp;seconds&nbsp;since&nbsp;1970-01-01&nbsp;00:00:00<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'TZoffset',&nbsp;'tz':&nbsp;The&nbsp;time&nbsp;zone&nbsp;offset.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'ISO_WEEK',&nbsp;'iso_wk',&nbsp;'isoww':&nbsp;The&nbsp;numeric&nbsp;week&nbsp;of&nbsp;the&nbsp;year,&nbsp;as&nbsp;defined&nbsp;by&nbsp;ISO&nbsp;standards.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+All&nbsp;values&nbsp;may&nbsp;not&nbsp;be&nbsp;able&nbsp;to&nbsp;be&nbsp;used&nbsp;in&nbsp;each&nbsp;function,&nbsp;as&nbsp;they&nbsp;may&nbsp;or&nbsp;may&nbsp;not&nbsp;make&nbsp;sense.&nbsp;&nbsp;For&nbsp;example,<br>
+it&nbsp;does&nbsp;not&nbsp;make&nbsp;sense&nbsp;to&nbsp;truncate&nbsp;a&nbsp;temporal&nbsp;value&nbsp;to&nbsp;the&nbsp;microsecond,&nbsp;as&nbsp;this&nbsp;is&nbsp;the&nbsp;lowest&nbsp;increment&nbsp;of<br>
+time&nbsp;used&nbsp;with&nbsp;temporal&nbsp;values.&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Notes<br>
+---------<br>
+&nbsp;<br>
+(1)&nbsp;Internally,&nbsp;DTTM&nbsp;is&nbsp;done&nbsp;in&nbsp;Python,&nbsp;and&nbsp;would&nbsp;first&nbsp;be&nbsp;implemented&nbsp;in&nbsp;Pig&nbsp;using&nbsp;Jython.&nbsp;&nbsp;I&nbsp;understand&nbsp;that<br>
+these&nbsp;could&nbsp;be&nbsp;done&nbsp;using&nbsp;Java,&nbsp;but&nbsp;the&nbsp;weight&nbsp;of&nbsp;the&nbsp;language&nbsp;is&nbsp;simply&nbsp;too&nbsp;much&nbsp;for&nbsp;me&nbsp;to&nbsp;bear&nbsp;for<br>
+what&nbsp;should&nbsp;be&nbsp;simple&nbsp;functionality.<br>
+&nbsp;<br>
+(2)&nbsp;When&nbsp;using&nbsp;DTTM&nbsp;functions,&nbsp;you&nbsp;can&nbsp;simply&nbsp;specify&nbsp;your&nbsp;temporal&nbsp;values&nbsp;in&nbsp;a&nbsp;string&nbsp;without&nbsp;a&nbsp;particular<br>
+format.&nbsp;&nbsp;The&nbsp;library&nbsp;is&nbsp;set&nbsp;up&nbsp;so&nbsp;that&nbsp;it&nbsp;will&nbsp;try&nbsp;to&nbsp;convert&nbsp;any&nbsp;text&nbsp;to&nbsp;a&nbsp;proper&nbsp;datetime&nbsp;value,&nbsp;using<br>
+the&nbsp;totally&nbsp;awesome&nbsp;Python&nbsp;dateutil&nbsp;library&nbsp;and&nbsp;parser.&nbsp;&nbsp;A&nbsp;temporal&nbsp;value&nbsp;could&nbsp;be&nbsp;anything&nbsp;from&nbsp;"12/31/1999"&nbsp;to&nbsp;<br>
+"Today&nbsp;is&nbsp;25&nbsp;of&nbsp;September&nbsp;of&nbsp;2003,&nbsp;exactly&nbsp;at&nbsp;10:49:41&nbsp;with&nbsp;timezone&nbsp;-03:00."&nbsp;and&nbsp;it&nbsp;would&nbsp;be&nbsp;usable.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+(3)&nbsp;This&nbsp;library&nbsp;is&nbsp;initially&nbsp;intended&nbsp;for&nbsp;PIG,&nbsp;but&nbsp;may&nbsp;be&nbsp;extended&nbsp;to&nbsp;other&nbsp;Hadoop&nbsp;projects&nbsp;as&nbsp;opportunites&nbsp;arise.<br>
+&nbsp;<br>
+(4)&nbsp;As&nbsp;mentioned&nbsp;before,&nbsp;this&nbsp;library&nbsp;depends&nbsp;on&nbsp;the&nbsp;python&nbsp;datetime&nbsp;and&nbsp;dateutil&nbsp;libraries.&nbsp;&nbsp;They&nbsp;must&nbsp;be&nbsp;installed<br>
+and&nbsp;available&nbsp;in&nbsp;your&nbsp;Jython&nbsp;Path&nbsp;across&nbsp;your&nbsp;cluster.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="dateutil.html">dateutil</a><br>
+</td><td width="25%" valign=top><a href="dateutil.parser.html">dateutil.parser</a><br>
+</td><td width="25%" valign=top><a href="time.html">time</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-date_add"><strong>date_add</strong></a>(date_part, number, input_text)</dt><dd><tt>Returns&nbsp;a&nbsp;character&nbsp;string&nbsp;representing&nbsp;the&nbsp;the&nbsp;datetime&nbsp;with&nbsp;a&nbsp;certain&nbsp;number&nbsp;of&nbsp;units&nbsp;added&nbsp;to&nbsp;it.&nbsp;<br>
+&nbsp;<br>
+Notes:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(1)&nbsp;This&nbsp;is&nbsp;a&nbsp;useful&nbsp;function&nbsp;seen&nbsp;in&nbsp;T-SQL.&nbsp;See&nbsp;<a href="http://msdn.microsoft.com/en-us/library/ms189794.aspx">http://msdn.microsoft.com/en-us/library/ms189794.aspx</a>&nbsp;for&nbsp;more&nbsp;details.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_part:&nbsp;a&nbsp;text&nbsp;string&nbsp;containing&nbsp;an&nbsp;english&nbsp;name&nbsp;of&nbsp;the&nbsp;part&nbsp;that&nbsp;should&nbsp;be&nbsp;returned.&nbsp;This&nbsp;could&nbsp;be&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;something&nbsp;like&nbsp;'year'&nbsp;or&nbsp;'hour'&nbsp;or&nbsp;an&nbsp;abbreviation&nbsp;like&nbsp;'wk'&nbsp;or&nbsp;'qq'&nbsp;(see&nbsp;notes&nbsp;for&nbsp;a&nbsp;full&nbsp;list).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;number:&nbsp;the&nbsp;number&nbsp;to&nbsp;add&nbsp;to&nbsp;the&nbsp;datetime.&nbsp;&nbsp;This&nbsp;can&nbsp;be&nbsp;positive&nbsp;or&nbsp;negative.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;string&nbsp;containing&nbsp;the&nbsp;particular&nbsp;part&nbsp;of&nbsp;the&nbsp;datetime&nbsp;(if&nbsp;valid)&nbsp;or&nbsp;an&nbsp;empty&nbsp;string&nbsp;(if&nbsp;invalid).</tt></dd></dl>
+ <dl><dt><a name="-date_diff"><strong>date_diff</strong></a>(date_part, start_text, end_text)</dt><dd><tt>Returns&nbsp;a&nbsp;character&nbsp;string&nbsp;representing&nbsp;the&nbsp;specific&nbsp;part&nbsp;of&nbsp;the&nbsp;difference&nbsp;between&nbsp;two&nbsp;specified&nbsp;datetimes.&nbsp;&nbsp;While<br>
+it&nbsp;primarily&nbsp;parts&nbsp;out&nbsp;logic&nbsp;to&nbsp;other&nbsp;functions,&nbsp;everything&nbsp;returned&nbsp;from&nbsp;this&nbsp;function&nbsp;will<br>
+be&nbsp;formatted&nbsp;as&nbsp;a&nbsp;character&nbsp;string,&nbsp;making&nbsp;for&nbsp;more&nbsp;consistent&nbsp;handling.<br>
+&nbsp;<br>
+Notes:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(1)&nbsp;This&nbsp;is&nbsp;a&nbsp;useful&nbsp;function&nbsp;seen&nbsp;in&nbsp;T-SQL.&nbsp;See&nbsp;<a href="http://msdn.microsoft.com/en-us/library/ms189794.aspx">http://msdn.microsoft.com/en-us/library/ms189794.aspx</a>&nbsp;for&nbsp;more&nbsp;details.<br>
+&nbsp;<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_part:&nbsp;a&nbsp;text&nbsp;string&nbsp;containing&nbsp;an&nbsp;english&nbsp;name&nbsp;of&nbsp;the&nbsp;part&nbsp;that&nbsp;should&nbsp;be&nbsp;returned.&nbsp;This&nbsp;could&nbsp;be&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;something&nbsp;like&nbsp;'year'&nbsp;or&nbsp;'hour'&nbsp;or&nbsp;an&nbsp;abbreviation&nbsp;like&nbsp;'wk'&nbsp;or&nbsp;'qq'&nbsp;(see&nbsp;notes&nbsp;for&nbsp;a&nbsp;full&nbsp;list).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;start_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;start&nbsp;of&nbsp;the&nbsp;period.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;end_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;end&nbsp;of&nbsp;the&nbsp;period..<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;string&nbsp;containing&nbsp;the&nbsp;particular&nbsp;part&nbsp;of&nbsp;the&nbsp;datetime&nbsp;(if&nbsp;valid)&nbsp;or&nbsp;an&nbsp;empty&nbsp;string&nbsp;(if&nbsp;invalid).</tt></dd></dl>
+ <dl><dt><a name="-date_end_of"><strong>date_end_of</strong></a>(date_part, input_text)</dt><dd><tt>Returns&nbsp;a&nbsp;datetime&nbsp;representing&nbsp;the&nbsp;last&nbsp;second&nbsp;of&nbsp;the&nbsp;time&nbsp;period&nbsp;containing&nbsp;the&nbsp;datetime&nbsp;specified.&nbsp;&nbsp;<br>
+&nbsp;<br>
+Notes:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(1)&nbsp;This&nbsp;can&nbsp;be&nbsp;combined&nbsp;nicely&nbsp;with&nbsp;the&nbsp;date_start_of&nbsp;function&nbsp;to&nbsp;isolate&nbsp;a&nbsp;range&nbsp;of&nbsp;values.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_part:&nbsp;a&nbsp;text&nbsp;string&nbsp;containing&nbsp;an&nbsp;english&nbsp;name&nbsp;of&nbsp;the&nbsp;part&nbsp;that&nbsp;should&nbsp;be&nbsp;returned.&nbsp;This&nbsp;could&nbsp;be&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;something&nbsp;like&nbsp;'year'&nbsp;or&nbsp;'hour'&nbsp;or&nbsp;an&nbsp;abbreviation&nbsp;like&nbsp;'wk'&nbsp;or&nbsp;'qq'&nbsp;(see&nbsp;notes&nbsp;for&nbsp;a&nbsp;full&nbsp;list).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;string&nbsp;containing&nbsp;the&nbsp;particular&nbsp;part&nbsp;of&nbsp;the&nbsp;datetime&nbsp;(if&nbsp;valid)&nbsp;or&nbsp;an&nbsp;empty&nbsp;string&nbsp;(if&nbsp;invalid).</tt></dd></dl>
+ <dl><dt><a name="-date_name"><strong>date_name</strong></a>(date_part, input_text)</dt><dd><tt>Returns&nbsp;a&nbsp;character&nbsp;string&nbsp;representing&nbsp;the&nbsp;specific&nbsp;part&nbsp;of&nbsp;the&nbsp;specified&nbsp;datetime.&nbsp;&nbsp;While<br>
+it&nbsp;primarily&nbsp;parts&nbsp;out&nbsp;logic&nbsp;to&nbsp;other&nbsp;functions,&nbsp;everything&nbsp;returned&nbsp;from&nbsp;this&nbsp;function&nbsp;will<br>
+be&nbsp;formatted&nbsp;as&nbsp;a&nbsp;character&nbsp;string,&nbsp;making&nbsp;for&nbsp;more&nbsp;consistent&nbsp;handling.<br>
+&nbsp;<br>
+Notes:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(1)&nbsp;This&nbsp;is&nbsp;a&nbsp;useful&nbsp;function&nbsp;seen&nbsp;in&nbsp;T-SQL.&nbsp;See&nbsp;<a href="http://msdn.microsoft.com/en-us/library/ms174395.aspx">http://msdn.microsoft.com/en-us/library/ms174395.aspx</a>&nbsp;for&nbsp;more&nbsp;details.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_part:&nbsp;a&nbsp;text&nbsp;string&nbsp;containing&nbsp;an&nbsp;english&nbsp;name&nbsp;of&nbsp;the&nbsp;part&nbsp;that&nbsp;should&nbsp;be&nbsp;returned.&nbsp;This&nbsp;could&nbsp;be&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;something&nbsp;like&nbsp;'year'&nbsp;or&nbsp;'hour'&nbsp;or&nbsp;an&nbsp;abbreviation&nbsp;like&nbsp;'wk'&nbsp;or&nbsp;'qq'&nbsp;(see&nbsp;notes&nbsp;for&nbsp;a&nbsp;full&nbsp;list).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;string&nbsp;containing&nbsp;the&nbsp;particular&nbsp;part&nbsp;of&nbsp;the&nbsp;datetime&nbsp;(if&nbsp;valid)&nbsp;or&nbsp;an&nbsp;empty&nbsp;string&nbsp;(if&nbsp;invalid).</tt></dd></dl>
+ <dl><dt><a name="-date_start_of"><strong>date_start_of</strong></a>(date_part, input_text)</dt><dd><tt>A&nbsp;synonym&nbsp;for&nbsp;the&nbsp;date_trunc&nbsp;function.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_part:&nbsp;a&nbsp;text&nbsp;string&nbsp;containing&nbsp;an&nbsp;english&nbsp;name&nbsp;of&nbsp;the&nbsp;part&nbsp;that&nbsp;should&nbsp;be&nbsp;returned.&nbsp;This&nbsp;could&nbsp;be&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;something&nbsp;like&nbsp;'year'&nbsp;or&nbsp;'hour'&nbsp;or&nbsp;an&nbsp;abbreviation&nbsp;like&nbsp;'wk'&nbsp;or&nbsp;'qq'&nbsp;(see&nbsp;notes&nbsp;for&nbsp;a&nbsp;full&nbsp;list).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;string&nbsp;containing&nbsp;the&nbsp;particular&nbsp;part&nbsp;of&nbsp;the&nbsp;datetime&nbsp;(if&nbsp;valid)&nbsp;or&nbsp;an&nbsp;empty&nbsp;string&nbsp;(if&nbsp;invalid).</tt></dd></dl>
+ <dl><dt><a name="-date_trunc"><strong>date_trunc</strong></a>(date_part, input_text)</dt><dd><tt>Truncates&nbsp;a&nbsp;datetime&nbsp;down&nbsp;to&nbsp;the&nbsp;unit&nbsp;specified.&nbsp;All&nbsp;precision&nbsp;below&nbsp;the&nbsp;date_part&nbsp;will&nbsp;be&nbsp;removed.<br>
+&nbsp;<br>
+Notes:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(1)&nbsp;This&nbsp;is&nbsp;a&nbsp;useful&nbsp;function&nbsp;seen&nbsp;in&nbsp;Oracle,&nbsp;Postgres,&nbsp;and&nbsp;others.&nbsp;See&nbsp;<a href="http://msdn.microsoft.com/en-us/library/ms189794.aspx">http://msdn.microsoft.com/en-us/library/ms189794.aspx</a>&nbsp;for&nbsp;more&nbsp;details.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;date_part:&nbsp;a&nbsp;text&nbsp;string&nbsp;containing&nbsp;an&nbsp;english&nbsp;name&nbsp;of&nbsp;the&nbsp;part&nbsp;that&nbsp;should&nbsp;be&nbsp;returned.&nbsp;This&nbsp;could&nbsp;be&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;something&nbsp;like&nbsp;'year'&nbsp;or&nbsp;'hour'&nbsp;or&nbsp;an&nbsp;abbreviation&nbsp;like&nbsp;'wk'&nbsp;or&nbsp;'qq'&nbsp;(see&nbsp;notes&nbsp;for&nbsp;a&nbsp;full&nbsp;list).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;string&nbsp;containing&nbsp;the&nbsp;particular&nbsp;part&nbsp;of&nbsp;the&nbsp;datetime&nbsp;(if&nbsp;valid)&nbsp;or&nbsp;an&nbsp;empty&nbsp;string&nbsp;(if&nbsp;invalid).</tt></dd></dl>
+ <dl><dt><a name="-day"><strong>day</strong></a>(input_text)</dt><dd><tt>Get&nbsp;the&nbsp;day&nbsp;for&nbsp;a&nbsp;particular&nbsp;temporal&nbsp;value.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;integer&nbsp;with&nbsp;the&nbsp;day&nbsp;(1-31).</tt></dd></dl>
+ <dl><dt><a name="-day_name"><strong>day_name</strong></a>(input_text)</dt><dd><tt>Get&nbsp;the&nbsp;day&nbsp;of&nbsp;the&nbsp;week&nbsp;as&nbsp;text&nbsp;for&nbsp;a&nbsp;particular&nbsp;temporal&nbsp;value.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;string&nbsp;with&nbsp;the&nbsp;text&nbsp;name&nbsp;of&nbsp;the&nbsp;day&nbsp;of&nbsp;the&nbsp;week.</tt></dd></dl>
+ <dl><dt><a name="-day_of_week"><strong>day_of_week</strong></a>(input_text)</dt><dd><tt>Get&nbsp;the&nbsp;numeric&nbsp;day&nbsp;of&nbsp;the&nbsp;week&nbsp;for&nbsp;a&nbsp;particular&nbsp;temporal&nbsp;value.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;integer&nbsp;with&nbsp;the&nbsp;week&nbsp;(1-7).</tt></dd></dl>
+ <dl><dt><a name="-day_of_year"><strong>day_of_year</strong></a>(input_text)</dt><dd><tt>Get&nbsp;the&nbsp;day&nbsp;of&nbsp;the&nbsp;year&nbsp;for&nbsp;a&nbsp;particular&nbsp;temporal&nbsp;value.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;integer&nbsp;with&nbsp;the&nbsp;day&nbsp;of&nbsp;the&nbsp;year&nbsp;(1-366).</tt></dd></dl>
+ <dl><dt><a name="-epoch"><strong>epoch</strong></a>(input_text)</dt><dd><tt>Get&nbsp;the&nbsp;UNIX&nbsp;datetime&nbsp;for&nbsp;a&nbsp;particular&nbsp;temporal&nbsp;value.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;long&nbsp;with&nbsp;the&nbsp;number&nbsp;of&nbsp;seconds.</tt></dd></dl>
+ <dl><dt><a name="-hour"><strong>hour</strong></a>(input_text)</dt><dd><tt>Get&nbsp;the&nbsp;numeric&nbsp;hour&nbsp;of&nbsp;the&nbsp;day&nbsp;for&nbsp;a&nbsp;particular&nbsp;temporal&nbsp;value.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;integer&nbsp;with&nbsp;the&nbsp;hour&nbsp;(0-23).</tt></dd></dl>
+ <dl><dt><a name="-iso_week"><strong>iso_week</strong></a>(input_text)</dt><dd><tt>Get&nbsp;the&nbsp;ISO&nbsp;defined&nbsp;week&nbsp;of&nbsp;the&nbsp;year&nbsp;for&nbsp;a&nbsp;particular&nbsp;temporal&nbsp;value.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;integer&nbsp;with&nbsp;the&nbsp;week&nbsp;(1-53).</tt></dd></dl>
+ <dl><dt><a name="-microsecond"><strong>microsecond</strong></a>(input_text)</dt><dd><tt>Get&nbsp;the&nbsp;numeric&nbsp;microsoecond&nbsp;for&nbsp;a&nbsp;particular&nbsp;temporal&nbsp;value.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;integer&nbsp;with&nbsp;the&nbsp;hour&nbsp;(0-1000000).</tt></dd></dl>
+ <dl><dt><a name="-minute"><strong>minute</strong></a>(input_text)</dt><dd><tt>Get&nbsp;the&nbsp;numeric&nbsp;minute&nbsp;of&nbsp;the&nbsp;hour&nbsp;for&nbsp;a&nbsp;particular&nbsp;temporal&nbsp;value.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;integer&nbsp;with&nbsp;the&nbsp;hour&nbsp;(0-59).</tt></dd></dl>
+ <dl><dt><a name="-month"><strong>month</strong></a>(input_text)</dt><dd><tt>Get&nbsp;the&nbsp;month&nbsp;for&nbsp;a&nbsp;particular&nbsp;temporal&nbsp;value.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;integer&nbsp;with&nbsp;the&nbsp;month&nbsp;(1-12).</tt></dd></dl>
+ <dl><dt><a name="-now"><strong>now</strong></a>()</dt><dd><tt>A&nbsp;function&nbsp;to&nbsp;return&nbsp;the&nbsp;current&nbsp;date&nbsp;and&nbsp;time.&nbsp;&nbsp;This&nbsp;can&nbsp;be&nbsp;combined&nbsp;nicely&nbsp;with&nbsp;date_add&nbsp;for&nbsp;ranges.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;string&nbsp;containing&nbsp;the&nbsp;date&nbsp;and&nbsp;time&nbsp;when&nbsp;this&nbsp;function&nbsp;was&nbsp;called.</tt></dd></dl>
+ <dl><dt><a name="-parse_formatted_temporal"><strong>parse_formatted_temporal</strong></a>(input_text, input_format<font color="#909090">='%Y-%m-%d %H:%M:%S'</font>)</dt><dd><tt>Returns&nbsp;a&nbsp;datetime&nbsp;from&nbsp;the&nbsp;string.&nbsp;&nbsp;You&nbsp;cannot&nbsp;make&nbsp;an&nbsp;invalid&nbsp;datetime&nbsp;with&nbsp;this&nbsp;function.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;an&nbsp;integer,&nbsp;defaults&nbsp;to&nbsp;1970<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_format:&nbsp;a&nbsp;text&nbsp;string&nbsp;that&nbsp;can&nbsp;be&nbsp;used&nbsp;by&nbsp;Python&nbsp;to&nbsp;interpret&nbsp;input_text&nbsp;properly.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+NOTE:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;For&nbsp;more&nbsp;dtails&nbsp;on&nbsp;input_format,&nbsp;see&nbsp;the&nbsp;Python&nbsp;documentation&nbsp;for&nbsp;the&nbsp;strptime&nbsp;function&nbsp;at<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior">http://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;python&nbsp;datetime&nbsp;(if&nbsp;called&nbsp;from&nbsp;Python)&nbsp;or&nbsp;a&nbsp;string&nbsp;containing&nbsp;an&nbsp;ISO&nbsp;formatted&nbsp;date&nbsp;time&nbsp;(if&nbsp;called&nbsp;from&nbsp;Pig).</tt></dd></dl>
+ <dl><dt><a name="-parse_temporal"><strong>parse_temporal</strong></a>(input_text)</dt><dd><tt>Returns&nbsp;a&nbsp;valid&nbsp;python&nbsp;datetime&nbsp;object&nbsp;and&nbsp;returns&nbsp;it&nbsp;as&nbsp;a&nbsp;string.&nbsp;It&nbsp;will&nbsp;attempt&nbsp;to&nbsp;automatically&nbsp;<br>
+format&nbsp;the&nbsp;input&nbsp;string&nbsp;and&nbsp;will&nbsp;throw&nbsp;an&nbsp;exception&nbsp;if&nbsp;it&nbsp;cannot.<br>
+&nbsp;<br>
+This&nbsp;function&nbsp;is&nbsp;really&nbsp;the&nbsp;heart&nbsp;of&nbsp;the&nbsp;package.&nbsp;&nbsp;Virtually&nbsp;every&nbsp;other&nbsp;function&nbsp;calls&nbsp;this<br>
+to&nbsp;build&nbsp;a&nbsp;working&nbsp;datetime&nbsp;value.&nbsp;&nbsp;Working&nbsp;with&nbsp;unstructured&nbsp;data&nbsp;means&nbsp;that&nbsp;we&nbsp;don't&nbsp;necesarily<br>
+have&nbsp;perfectly&nbsp;formatted&nbsp;data,&nbsp;especially&nbsp;for&nbsp;temporal&nbsp;data.&nbsp;&nbsp;This&nbsp;function&nbsp;helps&nbsp;us&nbsp;work&nbsp;with&nbsp;<br>
+data&nbsp;that&nbsp;is&nbsp;most&nbsp;likely&nbsp;in&nbsp;string&nbsp;form&nbsp;(or&nbsp;can&nbsp;easily&nbsp;be&nbsp;converted)&nbsp;and&nbsp;get&nbsp;something&nbsp;useful<br>
+out&nbsp;the&nbsp;other&nbsp;end.<br>
+&nbsp;<br>
+NOTE:&nbsp;<br>
+&nbsp;<br>
+This&nbsp;function&nbsp;is&nbsp;jus&nbsp;a&nbsp;wrapper&nbsp;around&nbsp;most&nbsp;excellent&nbsp;Python&nbsp;dateutils.parser,&nbsp;which&nbsp;allows<br>
+you&nbsp;to&nbsp;provide&nbsp;dates&nbsp;in&nbsp;a&nbsp;free-form&nbsp;manner.&nbsp;&nbsp;You&nbsp;don't&nbsp;have&nbsp;to&nbsp;specify&nbsp;a&nbsp;string&nbsp;to&nbsp;tell<br>
+this&nbsp;function&nbsp;what&nbsp;your&nbsp;date/time&nbsp;value&nbsp;looks&nbsp;like,&nbsp;you&nbsp;can&nbsp;simply&nbsp;provide&nbsp;the&nbsp;information<br>
+as&nbsp;a&nbsp;text&nbsp;string&nbsp;and&nbsp;it&nbsp;will&nbsp;figure&nbsp;out&nbsp;the&nbsp;rest.&nbsp;&nbsp;<br>
+&nbsp;<br>
+See&nbsp;<a href="http://labix.org/python-dateutil#head-1443e0f14ad5dff07efd465e080d1110920673d8-2">http://labix.org/python-dateutil#head-1443e0f14ad5dff07efd465e080d1110920673d8-2</a>&nbsp;for<br>
+examples&nbsp;of&nbsp;the&nbsp;different&nbsp;date&nbsp;and&nbsp;time&nbsp;formats&nbsp;that&nbsp;can&nbsp;be&nbsp;used.&nbsp;&nbsp;It&nbsp;could&nbsp;be&nbsp;anything&nbsp;from<br>
+"12/31/1999"&nbsp;to&nbsp;"Today&nbsp;is&nbsp;25&nbsp;of&nbsp;September&nbsp;of&nbsp;2003,&nbsp;exactly&nbsp;at&nbsp;10:49:41&nbsp;with&nbsp;timezone&nbsp;-03:00."<br>
+&nbsp;<br>
+If&nbsp;you&nbsp;really&nbsp;want&nbsp;to&nbsp;provide&nbsp;a&nbsp;specific&nbsp;format,&nbsp;use&nbsp;the&nbsp;<a href="#-parse_formatted_temporal">parse_formatted_temporal</a>()&nbsp;<br>
+or&nbsp;<a href="#-temporal_from_parts">temporal_from_parts</a>()&nbsp;functions&nbsp;instead.&nbsp;&nbsp;However,&nbsp;this&nbsp;function&nbsp;is&nbsp;much&nbsp;easier&nbsp;to&nbsp;use.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text,&nbsp;a&nbsp;string&nbsp;containing&nbsp;a&nbsp;datetime&nbsp;value.<br>
+&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;python&nbsp;datetime&nbsp;(if&nbsp;called&nbsp;from&nbsp;Python)&nbsp;or&nbsp;a&nbsp;string&nbsp;containing&nbsp;an&nbsp;ISO&nbsp;formatted&nbsp;date&nbsp;time&nbsp;(if&nbsp;called&nbsp;from&nbsp;Pig).</tt></dd></dl>
+ <dl><dt><a name="-quarter"><strong>quarter</strong></a>(input_text)</dt><dd><tt>Get&nbsp;the&nbsp;quarter&nbsp;for&nbsp;a&nbsp;particular&nbsp;temporal&nbsp;value.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;integer&nbsp;with&nbsp;the&nbsp;quarter&nbsp;(1-4).</tt></dd></dl>
+ <dl><dt><a name="-second"><strong>second</strong></a>(input_text)</dt><dd><tt>Get&nbsp;the&nbsp;numeric&nbsp;second&nbsp;of&nbsp;the&nbsp;minute&nbsp;for&nbsp;a&nbsp;particular&nbsp;temporal&nbsp;value.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;integer&nbsp;with&nbsp;the&nbsp;second&nbsp;(0-59).</tt></dd></dl>
+ <dl><dt><a name="-temporal_from_parts"><strong>temporal_from_parts</strong></a>(year<font color="#909090">=1970</font>, month<font color="#909090">=1</font>, day<font color="#909090">=1</font>, hour<font color="#909090">=0</font>, minute<font color="#909090">=0</font>, second<font color="#909090">=0</font>, microsecond<font color="#909090">=0</font>)</dt><dd><tt>Returns&nbsp;a&nbsp;datetime&nbsp;from&nbsp;the&nbsp;parts&nbsp;provided.&nbsp;&nbsp;Default&nbsp;value&nbsp;is&nbsp;the&nbsp;epoch&nbsp;of&nbsp;'1970-01-01&nbsp;00:00:00'<br>
+You&nbsp;cannot&nbsp;make&nbsp;an&nbsp;invalid&nbsp;datetime&nbsp;with&nbsp;this&nbsp;function.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;year:&nbsp;an&nbsp;integer,&nbsp;defaults&nbsp;to&nbsp;1970<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;month,&nbsp;an&nbsp;integer&nbsp;[1-12],&nbsp;defaults&nbsp;to&nbsp;1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;day,&nbsp;an&nbsp;integer&nbsp;[1-31],&nbsp;defaults&nbsp;to&nbsp;1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hour,&nbsp;an&nbsp;integer&nbsp;[0-23],&nbsp;defaults&nbsp;to&nbsp;0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;minute,&nbsp;an&nbsp;integer&nbsp;[0-59],&nbsp;defaults&nbsp;to&nbsp;0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;second,&nbsp;an&nbsp;integer&nbsp;[0-59],&nbsp;defaults&nbsp;to&nbsp;0<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;python&nbsp;datetime&nbsp;(if&nbsp;called&nbsp;from&nbsp;Python)&nbsp;or&nbsp;a&nbsp;string&nbsp;containing&nbsp;an&nbsp;ISO&nbsp;formatted&nbsp;date&nbsp;time&nbsp;(if&nbsp;called&nbsp;from&nbsp;Pig).</tt></dd></dl>
+ <dl><dt><a name="-today"><strong>today</strong></a>()</dt><dd><tt>A&nbsp;function&nbsp;to&nbsp;return&nbsp;today's&nbsp;date.&nbsp;&nbsp;This&nbsp;can&nbsp;be&nbsp;combined&nbsp;nicely&nbsp;with&nbsp;date_add&nbsp;for&nbsp;ranges.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;A&nbsp;string&nbsp;containing&nbsp;todays&nbsp;date.</tt></dd></dl>
+ <dl><dt><a name="-tz_offset"><strong>tz_offset</strong></a>(input_text)</dt><dd><tt>Get&nbsp;the&nbsp;timezone&nbsp;offset&nbsp;for&nbsp;a&nbsp;particular&nbsp;temporal&nbsp;value.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;string&nbsp;with&nbsp;the&nbsp;offset</tt></dd></dl>
+ <dl><dt><a name="-week"><strong>week</strong></a>(input_text)</dt><dd><tt>Get&nbsp;the&nbsp;week&nbsp;of&nbsp;the&nbsp;year&nbsp;for&nbsp;a&nbsp;particular&nbsp;temporal&nbsp;value.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;integer&nbsp;with&nbsp;the&nbsp;week&nbsp;(1-52).</tt></dd></dl>
+ <dl><dt><a name="-year"><strong>year</strong></a>(input_text)</dt><dd><tt>Get&nbsp;the&nbsp;year&nbsp;for&nbsp;a&nbsp;particular&nbsp;temporal&nbsp;value.<br>
+&nbsp;<br>
+Parameters:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;input_text:&nbsp;a&nbsp;string&nbsp;with&nbsp;a&nbsp;datetime&nbsp;value&nbsp;representing&nbsp;the&nbsp;temporal&nbsp;value&nbsp;to&nbsp;be&nbsp;manipulated.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+Returns:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;An&nbsp;integer&nbsp;with&nbsp;the&nbsp;year.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>DAILY</strong> = 3<br>
+<strong>FR</strong> = FR<br>
+<strong>HOURLY</strong> = 4<br>
+<strong>MAXYEAR</strong> = 9999<br>
+<strong>MINUTELY</strong> = 5<br>
+<strong>MINYEAR</strong> = 1<br>
+<strong>MO</strong> = MO<br>
+<strong>MONTHLY</strong> = 1<br>
+<strong>SA</strong> = SA<br>
+<strong>SECONDLY</strong> = 6<br>
+<strong>SU</strong> = SU<br>
+<strong>TH</strong> = TH<br>
+<strong>TU</strong> = TU<br>
+<strong>WE</strong> = WE<br>
+<strong>WEEKLY</strong> = 2<br>
+<strong>YEARLY</strong> = 0<br>
+<strong>datetime_CAPI</strong> = &lt;capsule object "datetime.datetime_CAPI"&gt;<br>
+<strong>rrulestr</strong> = &lt;dateutil.rrule._rrulestr instance&gt;</td></tr></table>
+</body></html>
