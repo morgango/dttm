@@ -32,7 +32,7 @@ In actual operation, the functions that get used the most are:
 
 There is a common set of string constants that are used across all of the manipulation functions through the datepart variable:
 	
-	*'year', 'yy', 'yyyy':* The numeric calendar year
+	**'year', 'yy', 'yyyy':** The numeric calendar year
 	*'quarter', 'qq', 'q':* The numeric calendar quarter (1-4)
 	*'month', 'mm', 'm':* The numeric calendar month (1-12)
 	*'day_of_year', 'dy', 'y':* The day (1-366) of the year.
