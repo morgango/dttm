@@ -26,9 +26,18 @@ Much of DTTM is designed to which is to have a single function with parameters t
 	
 In actual operation, the functions that get used the most are: 
 
-* parse_temporal(), which is used implicitly used by every other function.
-* Manipulation functions (date_add(), date_diff(), date_trunc(), date_start_of(), date_end_of(), date_name()) functions.
-* today() and now() 
+* Parsing functions [parse_temporal()], which is used implicitly used by every other function.
+* Manipulation functions [date_add(), date_diff(), date_trunc(), date_start_of(), date_end_of(), date_name() ].
+* Miscellaneous functions [today() and now()]
+* Extraction functions [ year(), quarter(), month(), day(), hour(), minute(), second(), microsecond() ]
+
+A typical use of a manipulation function would be a function that uses a string constant to decide what units to use for manipulation.  For example:
+	
+	date_add('day',-1, "December 31st in 1999") 	# returns '1/1/2000', adding a day.
+	date_trunc('hour', '12/31/1999 23:59:59') 	# returns '12/31/1999 23:00:00', rounding down to the hour
+	date_name('day_name', '12/31/99')		# returns 'Friday'
+	date_start_of('quarter', '2/1/2000')		# returns the start of the quarter ('1/1/2000'), same as date_trunc
+	date_end_of('quarter', '2/1/2000')		# returns the end of the quarter ('2/28/2000')
 
 There is a common set of string constants that are used across all of the manipulation functions through the datepart variable:
 	
