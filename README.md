@@ -23,7 +23,9 @@ Usage
 --------------------------
 
 Much of DTTM is designed to which is to have a single function with parameters to specify how work should be done.  For example, there is one function called date_diff that has a parameter (datepart) that is used to tell what units should be returned.  This is much easier fo end users to remember and use than something like one function per unit (date_diff_seconds, date_diff_minutes, date_diff_hours, etc.).
-	
+
+All of the functions are written in python, and [http://htmlpreview.github.com/?https://github.com/morgango/dttm/blob/master/dttm.html](documentation is here).
+
 In actual operation, the functions that get used the most are: 
 
 * Parsing functions [parse_temporal()], which is used implicitly used by every other function.
