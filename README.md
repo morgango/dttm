@@ -41,9 +41,9 @@ A typical use of a manipulation function would be a function that uses a string 
 	date_start_of('quarter', '2/1/2000')		# returns the start of the quarter ('1/1/2000'), same as date_trunc
 	date_end_of('quarter', '2/1/2000')		# returns the end of the quarter ('2/28/2000')
 
-There is a common set of string constants that are used across all of the manipulation functions through the datepart variable:
+There is a common set of string constants that are used across all of the manipulation functions.  These are typically passed through the datepart variable, and attempt to be consistent across function and remain similar to the Transact SQL definitions:
 	
-	'year', 'yy', 'yyyy': The numeric calendar year
+	**'year', 'yy', 'yyyy':** The numeric calendar year
 	'quarter', 'qq', 'q': The numeric calendar quarter (1-4)
 	'month', 'mm', 'm':* The numeric calendar month (1-12)
 	'day_of_year', 'dy', 'y': The day (1-366) of the year.
