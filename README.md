@@ -15,7 +15,7 @@ much (if any) additional knowledge about data types.
 	
 3. **Make date and time functions that are friendly to users.**  That means having fewer functions with parameters instead of lots of very similar functions.  Also, include useful utility functions that allow common date manipulations, such as extracting parts of temporal values (for partitioning) and finding the beginning and end of days, months, and quarters.
 	
-4. **Make date and time manipulations more durable.**  If formatting is slightly different for you shouldn't have to do a lot of work to compensate.    If your data looks like it could be a datetime to the eyeball, you should be able to use it for data processing.
+4. **Make date and time manipulations more durable.**  If data is formatted slightly differently then processes shouldn't break and operations shouldn't stop, if at all possible.  If your data looks like it could be a datetime to the eyeball, you should be able to use it for data processing.
 
 5. **Leverage the best APIs from procedural and query based languages** and not reinvent the wheel.  Use existing code whenever possible and take advantage of platform-specific niceties.  Elements of Python, Transact-SQL, and PL/SQL were leveraged  for back- and front-end work.
 
