@@ -1,7 +1,7 @@
 DTTM
 ==========================
 
-DTTM is a UDF library that aims to make date manipulation simpler and more robust for unstructured data.  
+DTTM (short for "Date/Time") is a UDF library that aims to make date manipulation simpler and more robust for unstructured data.  
 Conceptually, the date/time UDFs in Hadoop are fine, but they seem to be designed to be easy to code, 
 and not particularly easy to use for end users.  
 
@@ -10,27 +10,27 @@ Core Design Principles
 
 The core design principles of the DTTM library are to: 
 
-1. Allow date and time manipulations from unstructured text, which I refer to as "temporal values".  
+1. Allow date and time manipulations from *unstructured text*, which I refer to as **"temporal values"**.  
 DTTM does not requiring specific formatting for dates or times, instead it tries to figure out what is in 
 a text string and use it.  Formatting temporals to fit the language is ass-backward, and typically 
 this is a time consuming, difficult and error-prone part of data preparation.
   
-A temporal value could be anything from "09/25/2003 10:49:41 -03:00" to 
+A **temporal value** could be anything from "09/25/2003 10:49:41 -03:00" to 
 "Today is 25 of September of 2003, exactly at 10:49:41 with timezone -03:00." These should both be usable and
-interchangeable without user intervention.
+interchangeable *without user intervention*.
 	
-2. Make temporal manipulations very easy to do, so that an analyst could understand them without needing 
+2. **Make temporal manipulations very easy to do**. So easy that an analyst could understand them without needing 
 much (if any) additional knowledge about data types.
 	
-3. Make date and time functions that are friendly to users.  That means having fewer functions with parameters
+3. **Make date and time functions that are friendly to users.**  That means having fewer functions with parameters
 instead of lots of very similar functions.  Also, include useful utility functions that allow common date manipulations,
 such as extracting parts of temporal values (for partitioning) and finding the beginning and end of days, months, and quarters.
 	
-4. Make date and time manipulations more durable.  If formatting is slightly different for you shouldn't have
+4. **Make date and time manipulations more durable.**  If formatting is slightly different for you shouldn't have
 to do a lot of work to compensate.    If your data looks like it could be a datetime to the
 eyeball, you should be able to use it for data processing.
 
-5. Leverage the best APIs from procedural and query based languages and not reinvent the wheel.  Use existing 
+5. **Leverage the best APIs from procedural and query based languages** and not reinvent the wheel.  Use existing 
 code whenever possible and take advantage of platform-specific niceties.  Elements of Python,  
 Transact-SQL, and PL/SQL were leveraged  for back- and front-end work.
 
