@@ -26,7 +26,7 @@ Much of DTTM is designed to which is to have a single function with parameters t
 
 All of the functions are written in Python, and [Pydoc documentation is here](http://htmlpreview.github.com/?https://github.com/morgango/dttm/blob/master/dttm.html).  Note that there is some code there to make Pig and Jython bindings available, so there may need to be some work done to use it in straight Python.
 
-Each function will take a string representing a datetime value and internally it will convert it into a Python datetime value.  Once that is done, python is used to read, query, or alter the datetime accordingly.  Note that you **_DO NOT HAVE TO PROVIDE A PARTICULAR FORMAT FOR THE INPUT_**.  This is because we are able to use Python modules to resolve the datetime format appropriately.  While it isn't perfect, it goes a long, long, long way in doing the conversion work for you.
+Each function will take a string representing a datetime value and internally it will convert it into a Python datetime value.  Once that is done, python is used to read, query, or alter the datetime accordingly.  Note that you **_DO NOT HAVE TO PROVIDE A PREDEFINED FORMAT FOR THE STRING INPUT_**.  This is because we are able to use Python modules to resolve the datetime format appropriately.  While it isn't perfect, it goes a long, long, long way in doing the conversion work for you.  If you wish, you can provide a format, but it is unnecessary.
 
 In actual operation, the functions that get used the most are (in order): 
 
