@@ -35,9 +35,9 @@ In actual operation, the functions that get used the most are (in order):
 * **Extraction functions** [ year(), quarter(), month(), day(), hour(), minute(), second(), microsecond(),epoch() ]
 * **Parsing functions** [parse_temporal()], which is used implicitly used by every other function but not normally called by users.
 
-All parsing, manipulation, and present functions will return a string value.  The extraction functions will return numeric values (either long or integers).  Other functions call the extraction functions under the sheets, so you can be sure that they are providing the same data.
+### Examples
 
-A typical use of a manipulation function would be a function that uses a string constant to decide what units to use for manipulation.  For example:
+All parsing, manipulation, and present functions will return a string value.  The extraction functions will return numeric values (either long or integers).  Other functions call the extraction functions under the sheets, so you can be sure that they are providing the same data.  A typical use of a manipulation function would be a function that uses a string constant to decide what units to use for manipulation.  For example:
 	
 	date_add('day',-1, "December 31st in 1999") 	# returns '1/1/2000', adding a day.
 	date_trunc('hour', '12/31/1999 23:59:59') 	# returns '12/31/1999 23:00:00', rounding down to the hour
@@ -48,7 +48,9 @@ A typical use of a manipulation function would be a function that uses a string 
 	month('2/1/2000')				# returns 2
 
 
-There is a common set of string constants that are used across all of the manipulation functions.  These are typically passed through the datepart variable, and attempt to be consistent across function and remain similar to the Transact SQL definitions.  This is a comprehensive list of the abbreviations used in DTTM:
+### Unit Constants
+
+There is a common set of string constants that are used across all of the manipulation functions to designate what temporal units to work with.  These are typically passed through the datepart variable, and attempt to be consistent across function and remain similar to the Transact SQL definitions.  This is a comprehensive list of the abbreviations used in DTTM:
 	
 	'year', 'yy', 'yyyy': The numeric calendar year
 	'quarter', 'qq', 'q': The numeric calendar quarter (1-4)
