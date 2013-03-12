@@ -24,7 +24,7 @@ Usage
 
 Much of DTTM is designed to which is to have a single function with parameters to specify how work should be done.  For example, there is one function called date_diff that has a parameter (datepart) that is used to tell what units should be returned.  This is much easier fo end users to remember and use than something like one function per unit (date_diff_seconds, date_diff_minutes, date_diff_hours, etc.).
 
-All of the functions are written in python, and [documentation is here](http://htmlpreview.github.com/?https://github.com/morgango/dttm/blob/master/dttm.html).
+All of the functions are written in Python, and [DTTM documentation is here](http://htmlpreview.github.com/?https://github.com/morgango/dttm/blob/master/dttm.html).  Note that there is some code there to make Pig and Jython bindings available, so there may need to be some work done to use it in straight Python.
 
 In actual operation, the functions that get used the most are: 
 
@@ -69,6 +69,6 @@ Notes
 
 2. When using DTTM functions, you can simply specify your temporal values in a string without a particular format.  The library is set up so that it will try to convert any text to a proper datetime value, using the totally awesome Python dateutil library and parser.  A temporal value could be anything from "12/31/1999" to "Today is 25 of September of 2003, exactly at 10:49:41 with timezone -03:00." and it would be usable.
 	
-3. This library is initially intended for PIG, but may be extended to other Hadoop projects as opportunites arise.
+3. This library is initially intended for Apache Pig, but may be extended to other Hadoop projects as opportunites arise.
 
-4. As mentioned before, this library depends on the python datetime and dateutil libraries.  They must be installed and available in your Jython Path across your cluster.
+4. As mentioned before, this library depends on the Python [datetime](http://docs.python.org/2/library/datetime.html) and [dateutil](http://labix.org/python-dateutil) libraries.  They must be installed and available in your Jython Path across your cluster.
