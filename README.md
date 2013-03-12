@@ -19,19 +19,19 @@ much (if any) additional knowledge about data types.
 
 5. **Leverage the best APIs from procedural and query based languages** and not reinvent the wheel.  Use existing code whenever possible and take advantage of platform-specific niceties.  Elements of Python, Transact-SQL, and PL/SQL were leveraged  for back- and front-end work.
 
-Usage
+General Usage
 --------------------------
 
 Much of DTTM is designed to which is to have a single function with parameters to specify how work should be done.  For example, there is one function called date_diff that has a parameter (datepart) that is used to tell what units should be returned.  This is much easier fo end users to remember and use than something like one function per unit (date_diff_seconds, date_diff_minutes, date_diff_hours, etc.).
 
-All of the functions are written in Python, and [DTTM documentation is here](http://htmlpreview.github.com/?https://github.com/morgango/dttm/blob/master/dttm.html).  Note that there is some code there to make Pig and Jython bindings available, so there may need to be some work done to use it in straight Python.
+All of the functions are written in Python, and [Pydoc documentation is here](http://htmlpreview.github.com/?https://github.com/morgango/dttm/blob/master/dttm.html).  Note that there is some code there to make Pig and Jython bindings available, so there may need to be some work done to use it in straight Python.
 
 In actual operation, the functions that get used the most are: 
 
-* Parsing functions [parse_temporal()], which is used implicitly used by every other function.
-* Manipulation functions [date_add(), date_diff(), date_trunc(), date_start_of(), date_end_of(), date_name() ].
-* Miscellaneous functions [today() and now()]
-* Extraction functions [ year(), quarter(), month(), day(), hour(), minute(), second(), microsecond() ]
+* **Parsing functions** [parse_temporal()], which is used implicitly used by every other function.
+* **Manipulation functions** [date_add(), date_diff(), date_trunc(), date_start_of(), date_end_of(), date_name() ].
+* **Miscellaneous functions** [today() and now()]
+* **Extraction functions** [ year(), quarter(), month(), day(), hour(), minute(), second(), microsecond() ]
 
 A typical use of a manipulation function would be a function that uses a string constant to decide what units to use for manipulation.  For example:
 	
