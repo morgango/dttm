@@ -32,22 +32,22 @@ In actual operation, the functions that get used the most are:
 
 There is a common set of string constants that are used across all of the manipulation functions through the datepart variable:
 	
-	**'year', 'yy', 'yyyy':** The numeric calendar year
-	*'quarter', 'qq', 'q':* The numeric calendar quarter (1-4)
-	*'month', 'mm', 'm':* The numeric calendar month (1-12)
-	*'day_of_year', 'dy', 'y':* The day (1-366) of the year.
-	*'day_name', 'dn':* The name ('Sunday') of the day of the week
-	*'day', 'dd', 'd':* The numeric day of the month.
-	*'week', 'wk', 'ww':* The numeric week of the year.
-	*'weekday', 'dw':* The numeric day of the week
-	*'day_of_week', 'dow':* The numeric day of the week (1-7)
-	*'hour', 'hh':* The numeric hour of the day (0-23)
-	*'minute', 'mi', 'n':* The numeric minute of the hour (0-59)
-	*'second', 'ss', 's':* The numeric second of the minute (0-59)
-	*'microsecond', 'mcs':* The numeric microsecond of the second (0-1000000)
-	*'epoch', 'unix', 'ep':* The numeric number of seconds since 1970-01-01 00:00:00
-	*'TZoffset', 'tz':* The time zone offset.
-	*'ISO_WEEK', 'iso_wk', 'isoww':* The numeric week of the year, as defined by ISO standards.
+	'year', 'yy', 'yyyy': The numeric calendar year
+	'quarter', 'qq', 'q': The numeric calendar quarter (1-4)
+	'month', 'mm', 'm':* The numeric calendar month (1-12)
+	'day_of_year', 'dy', 'y': The day (1-366) of the year.
+	'day_name', 'dn': The name ('Sunday') of the day of the week
+	'day', 'dd', 'd': The numeric day of the month.
+	'week', 'wk', 'ww': The numeric week of the year.
+	'weekday', 'dw': The numeric day of the week
+	'day_of_week', 'dow': The numeric day of the week (1-7)
+	'hour', 'hh': The numeric hour of the day (0-23)
+	'minute', 'mi', 'n': The numeric minute of the hour (0-59)
+	'second', 'ss', 's': The numeric second of the minute (0-59)
+	'microsecond', 'mcs': The numeric microsecond of the second (0-1000000)
+	'epoch', 'unix', 'ep': The numeric number of seconds since 1970-01-01 00:00:00
+	'TZoffset', 'tz': The time zone offset.
+	'ISO_WEEK', 'iso_wk', 'isoww': The numeric week of the year, as defined by ISO standards.
 	
 All values may not be able to be used in each function, as they may or may not make sense.  For example, it does not make sense to truncate a temporal value to the microsecond, as this is the lowest increment of time used with temporal values. 
 	
